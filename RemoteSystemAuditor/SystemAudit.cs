@@ -5,11 +5,11 @@ using System.Text.RegularExpressions;
 
 namespace RemoteSystemAuditor
 {
-    public class Audit
+    public class SystemAudit
     {
         private readonly Process process;
 
-        public Audit()
+        public SystemAudit()
         {
             this.process = new Process();
             this.ConfigureCMD(this.process);

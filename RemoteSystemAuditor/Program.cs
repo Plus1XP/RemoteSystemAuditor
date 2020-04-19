@@ -13,7 +13,7 @@ namespace RemoteSystemAuditor
             string DirectoryName = Directory.GetCurrentDirectory();
             string ExecutableName = $"{Path.GetFileName(Assembly.GetEntryAssembly().Location).Before(".exe")}";
 
-            Audit audit = new Audit();
+            SystemAudit audit = new SystemAudit();
             SendMail send = new SendMail();
 
             Console.WriteLine("Please Wait...");
