@@ -7,15 +7,19 @@ namespace RemoteSystemAuditor
     class Program
     {
         // Rename the Executable file once compiled, with a meaningful name to keep track of the audits.
-        public static string ExecutableName = $"{Path.GetFileName(Assembly.GetEntryAssembly().Location).Before(".exe")}";
         static void Main(string[] args)
         {
+            string Results;
+            string DirectoryName = Directory.GetCurrentDirectory();
+            string ExecutableName = $"{Path.GetFileName(Assembly.GetEntryAssembly().Location).Before(".exe")}";
+
             Audit audit = new Audit();
+            SendMail send = new SendMail();
 
             Console.WriteLine("Please Wait...");
-            string results = audit.GetSystemInfo(ExecutableName);
-            Console.WriteLine(results);
-            SendMail.NewMessage($"System Audit {ExecutableName}", results);
+            Results = audit.GetSystemInfo(ExecutableName, DirectoryName);
+            Console.WriteLine(Results);
+            send.NewMessage($"System Audit {ExecutableName}", Results);
             Console.WriteLine("Press Enter to exit");
             Console.ReadLine();
         }
