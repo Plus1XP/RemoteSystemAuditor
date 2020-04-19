@@ -4,41 +4,46 @@ using System.Net.Mail;
 
 namespace RemoteSystemAuditor
 {
-    public static class SendMail
+    public class SendMail
     {
-        public static void NewMessage(string subject, string message)
-        {
-            Settings settings = new Settings();
+        private readonly SmtpClient smtp;
+        private readonly MailMessage mail;
+        private readonly Settings settings;
 
+        public SendMail()
+        {
+            this.smtp = new SmtpClient();
+            this.mail = new MailMessage();
+            this.settings = new Settings();
+        }
+
+        public void NewMessage(string subject, string message)
+        {
             try
             {
-                SmtpClient SmtpClient = new SmtpClient();
+                // Set smtp-client with basicAuthentication.
+                this.smtp.Host = this.settings.host;
+                this.smtp.Port = this.settings.port;
 
-                // set smtp-client with basicAuthentication
-                SmtpClient.Host = settings.host;
-                SmtpClient.Port = settings.port;
+                // Must be set before NetworkCredentials.
+                this.smtp.UseDefaultCredentials = false;
+                this.smtp.Credentials = new NetworkCredential(this.settings.userName, this.settings.password);
+                this.smtp.EnableSsl = true;
 
-                // must be set before NetworkCredentials
-                SmtpClient.UseDefaultCredentials = false;
-                SmtpClient.Credentials = new NetworkCredential(settings.userName, settings.password);
-                SmtpClient.EnableSsl = true;
+                // Add from & to mailaddresses.
+                this.mail.From = new MailAddress(this.settings.emailAddress);
+                this.mail.To.Add(this.settings.destinationEmail);
 
-                MailMessage Mail = new MailMessage();
+                // Set subject & encoding.
+                this.mail.Subject = subject;
+                this.mail.SubjectEncoding = System.Text.Encoding.UTF8;
 
-                // add from,to mailaddresses
-                Mail.From = new MailAddress(settings.emailAddress);
-                Mail.To.Add(settings.destinationEmail);
+                // Set body-message & encoding.
+                this.mail.Body = message;
+                this.mail.BodyEncoding = System.Text.Encoding.UTF8;
 
-                // set subject and encoding
-                Mail.Subject = subject;
-                Mail.SubjectEncoding = System.Text.Encoding.UTF8;
-
-                // set body-message and encoding
-                Mail.Body = message;
-                Mail.BodyEncoding = System.Text.Encoding.UTF8;
-
-                // send Mail
-                SmtpClient.Send(Mail);
+                // Send Mail.
+                this.smtp.Send(this.mail);
 
                 Console.WriteLine("Mail Sent!");
             }
