@@ -1,73 +1,61 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RemoteSystemAuditor
 {
     public class Audit
     {
-        public String GetSystemInfo(string executableName)
-        {
-            // Start the child process.
-            Process cmd = new Process();
+        private readonly Process process;
 
+        public Audit()
+        {
+            this.process = new Process();
+            this.ConfigureCMD(this.process);
+        }
+
+        public String GetSystemInfo(string executableName, string directoryName)
+        {
             StringBuilder results = new StringBuilder();
 
             results.Append(executableName);
             results.AppendLine(string.Empty);
-            results.AppendLine(InitialCMD(cmd, "wmic computersystem get manufacturer,model,name,domain"));
-            results.AppendLine(FollowingCMD(cmd, "wmic bios get serialnumber"));
-            results.AppendLine(FollowingCMD(cmd, "wmic os get caption,csdversion,osarchitecture,version"));
-            results.AppendLine(FollowingCMD(cmd, "wmic BIOS get Manufacturer,Name,description,SMBIOSBIOSVersion,Version,serialnumber"));
-            results.AppendLine(FollowingCMD(cmd, "wmic CPU get Name,NumberOfCores,NumberOfLogicalProcessors"));
-            results.AppendLine(FollowingCMD(cmd, "wmic MEMORYCHIP get Capacity,DeviceLocator,manufacturer,PartNumber,serialnumber,Tag"));
-            results.AppendLine(FollowingCMD(cmd, "wmic MEMPHYSICAL get MaxCapacity"));
-            results.AppendLine(FollowingCMD(cmd, "wmic DISKDRIVE get InterfaceType,Name,model,Size,Status,statusinfo,serialnumber"));
-            results.AppendLine(FollowingCMD(cmd, "wmic USERACCOUNT get Caption,Name,localaccount,PasswordRequired,Status"));
-            results.AppendLine(FollowingCMD(cmd, "wmic printer get name,portname,drivername"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic computersystem get manufacturer,model,name,domain"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic bios get serialnumber"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic os get caption,csdversion,osarchitecture,version"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic BIOS get Manufacturer,Name,description,SMBIOSBIOSVersion,Version,serialnumber"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic CPU get Name,NumberOfCores,NumberOfLogicalProcessors"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic MEMORYCHIP get Capacity,DeviceLocator,manufacturer,PartNumber,serialnumber,Tag"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic MEMPHYSICAL get MaxCapacity"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic DISKDRIVE get InterfaceType,Name,model,Size,Status,statusinfo,serialnumber"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic USERACCOUNT get Caption,Name,localaccount,PasswordRequired,Status"));
+            results.AppendLine(this.ExecuteCMD(this.process, "wmic printer get name,portname,drivername"));
 
-            return results.ToString();
+            return Regex.Replace(results.ToString().Replace($"{directoryName}>",string.Empty), @"^\s+$[\r\n]*", Environment.NewLine, RegexOptions.Multiline);
         }
 
-        private string InitialCMD(Process cmd, string param)
+        private void ConfigureCMD(Process process)
         {
-            cmd.StartInfo.FileName = "cmd.exe";
-            cmd.StartInfo.Arguments = param;
-            cmd.StartInfo.RedirectStandardInput = true;
-            cmd.StartInfo.RedirectStandardOutput = true;
-            cmd.StartInfo.CreateNoWindow = true;
-            cmd.StartInfo.UseShellExecute = false;
-            cmd.Start();
-
-            cmd.StandardInput.WriteLine(param);
-            cmd.StandardInput.Flush();
-            cmd.StandardInput.Close();
-
-            string output = cmd.StandardOutput.ReadToEnd();
-
-            //string value = output.Substring(output.IndexOf(param) + param.Length);
-            string value = output.After(param);
-
-            cmd.WaitForExit();
-
-            return value;
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardInput = true;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.UseShellExecute = false;
         }
 
-        private string FollowingCMD(Process cmd, string param)
+        private string ExecuteCMD(Process process, string param)
         {
-            cmd.StartInfo.RedirectStandardInput = true;
-            cmd.Start();
-            cmd.StartInfo.Arguments = param;
+            process.Start();
+            process.StartInfo.Arguments = param;
 
-            cmd.StandardInput.WriteLine(param);
-            cmd.StandardInput.Flush();
-            cmd.StandardInput.Close();
+            process.StandardInput.WriteLine(param);
+            process.StandardInput.Flush();
+            process.StandardInput.Close();
 
-            string output = cmd.StandardOutput.ReadToEnd();
+            string value = process.StandardOutput.ReadToEnd().After(param);
 
-            //string value = output.Substring(output.IndexOf(param) + param.Length);
-            string value = output.After(param);
-            cmd.WaitForExit();
+            process.WaitForExit();
 
             return value;
         }
