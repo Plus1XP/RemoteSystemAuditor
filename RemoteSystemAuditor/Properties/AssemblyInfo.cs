@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("RemoteSystemAuditor")]
 [assembly: AssemblyDescription("Retrieve's a range of information from the users computer using WMIC")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("https://github.com/aleuts")]
+[assembly: AssemblyCompany("https://github.com/Plus1XP")]
 [assembly: AssemblyProduct("RemoteSystemAuditor")]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCopyright("Copyright ©  2020 Plus1XP")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
